@@ -40,6 +40,7 @@ chrome.runtime.onMessage.addListener(function(request,sender,sendResponse){
             content.removeChild(content.childNodes[1]);
         }
 
+        window.dispatchEvent(new Event('resize'));
         //var get rid of 
 
         // chrome.storage.local.get('companies',function(companies){
