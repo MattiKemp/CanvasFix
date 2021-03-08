@@ -17,7 +17,7 @@ checkboxs[4].children[0].id="Title";
 checkboxs[0].innerHTML += "Remove Top Bar";
 checkboxs[1].innerHTML += "Remove Bottom Bar";
 checkboxs[2].innerHTML += "Enlarge Previews";
-checkboxs[3].innerHTML += "Remove Side Bar";
+checkboxs[3].innerHTML += "Minimize Side Bar (WIP)";
 checkboxs[4].innerHTML += "Remove Redundant Title";
 //create options
 var options = document.createElement('h1');
@@ -72,7 +72,7 @@ chrome.storage.sync.get('preferences', function(result){
         if(!document.getElementById('Default').checked){
             document.getElementsByClassName('checkboxs')[0].appendChild(options);
             for(var i = 0; i < checkboxs.length; i++){
-                checkboxs[i].children[0].checked=true;
+                //checkboxs[i].children[0].checked=true;
                 document.getElementsByClassName('checkboxs')[0].appendChild(checkboxs[i]);
             }
             update('Default',false);

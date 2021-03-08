@@ -16,6 +16,7 @@ chrome.storage.sync.get('preferences',function(result){
         preferences['Enlarge'] = true;
         preferences['SideBar'] = true;
         preferences['Title'] = true;
+        preferences['Maximized'] = true;
         chrome.storage.sync.set({'preferences':preferences});
     }
 });
