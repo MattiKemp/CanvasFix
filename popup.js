@@ -53,6 +53,7 @@ chrome.storage.sync.get('preferences', function(result){
         }
     }
 });
+
 //this is bad code too :()
 (function(){
     chrome.tabs.query({active:true ,currentWindow:true},function(tabs){
