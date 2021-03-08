@@ -1,6 +1,7 @@
 chrome.runtime.sendMessage({todo:"showPageAction"});
+//primarily for testing
 chrome.runtime.onMessage.addListener(function(request,sender,sendResponse){
-    if(request.todo == "changeColor"){
+    if(request.todo == "changeColo"){
         //add storage for settings 
         chrome.storage.sync.get('preferences', function(result){
             var preferences = result.preferences;
