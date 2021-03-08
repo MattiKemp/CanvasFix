@@ -6,7 +6,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
     }
 })
 chrome.storage.sync.get('preferences',function(result){
-    console.log(result);
     //test if preferences has not been set
     if(result && Object.keys(result).length === 0 && result.constructor === Object){
         console.log('no saved settings');
@@ -20,4 +19,9 @@ chrome.storage.sync.get('preferences',function(result){
         chrome.storage.sync.set({'preferences':preferences});
     }
 });
-//chrome.storage.sync.set({'companies':companies});
+
+chrome.webNavigation.onCompleted.addListener(function(){
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {todo: "test"});
+      });
+});

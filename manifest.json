@@ -22,13 +22,16 @@
         {
             "matches":["https://uiowa.instructure.com/*"],
             "js":["content.js"],
-            "css":["content.css"]
+            "css":["content.css"],
+            "run_at": "document_start"
         }
     ],
     "permissions": [
         "tabs",
         "https://uiowa.instructure.com/*",
         "storage",
-        "contextMenus"
+        "contextMenus",
+        "webNavigation",
+        "*://*/_generated_background_page.html"
     ]
 }
