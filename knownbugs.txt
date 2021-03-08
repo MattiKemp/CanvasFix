@@ -1,0 +1,2 @@
+The non default options aren't properly checked when default is unchecked.
+
