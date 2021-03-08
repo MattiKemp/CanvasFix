@@ -87,7 +87,11 @@ function fix(){
 
         //remove bottom bar
         if(preferences['Default'] || preferences['BottomBar']){
-            content.removeChild(document.getElementById('sequence_footer'));
+            var sequence_footer = document.getElementById('sequence_footer')
+            console.log(sequence_footer);
+            if(sequence_footer!=null){
+                content.removeChild(sequence_footer);
+            }
         }
         var iframes = document.querySelectorAll('iframe');
         //fix iframes, add a setting for later???
@@ -118,7 +122,40 @@ function fix(){
                 content.removeChild(content.childNodes[1]);
             }
         }
-    
+
+        //sidebar stuff
+        if(!preferences['Default'] && preferences['SideBar']){
+            var minimize = document.createElement("button");
+            //minimize.innerText = "Min";
+            var spring = document.getElementById('section-tabs-header-subtitle');
+            spring.innerText = "";
+            spring.append(minimize);
+            var main = document.getElementById('main');
+            var leftSide = document.getElementById('left-side');
+            //main.style = "margin-left: 140px;";
+            //leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+
+            function minOrMax(){
+                if(preferences['Maximized']){
+                    main.style = "margin-left: 140px;";
+                    leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+                    minimize.innerText = "Min";
+                    //preferences['Maximized'] = false;
+                }
+                else{
+                    main.style = "margin-left:75px;";
+                    leftSide.style = "width:75px; padding: 24px 0px 6px 12px;";
+                    minimize.innerText = "Max";
+                    //preferences['Maximized'] = true;
+                }
+                chrome.storage.sync.set({'preferences':preferences});
+            }
+            minOrMax();
+            minimize.addEventListener('click', function(){
+                preferences['Maximized'] = !preferences['Maximized'];
+                minOrMax();
+            });
+        }
         window.dispatchEvent(new Event('resize'));
     })
 }
