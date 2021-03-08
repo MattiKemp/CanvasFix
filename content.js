@@ -1,3 +1,9 @@
+var topBarSucc = false;
+var bottomBarSucc = false;
+var SideBarSucc = false;
+var titleSucc = false;
+var overflowSucc = false;
+
 chrome.storage.sync.get('preferences', function(result){
     var preferences = result.preferences;
     if(preferences['Off']){
@@ -7,11 +13,7 @@ chrome.storage.sync.get('preferences', function(result){
     const mo = new MutationObserver(onMutation);
     // in case the content script was injected after the page is partially loaded
     onMutation([{addedNodes: [document.documentElement]}]);
-    //onMutation(document.documentElement);
     observe();
-
-    //var wrapper;
-    //var content;
 
     function onMutation(mutations){
         const toRemove = [];
@@ -20,62 +22,58 @@ chrome.storage.sync.get('preferences', function(result){
                 if(n.tagName){
                     //fix wrapper max width
                     if (n.matches('#wrapper')){
-                        //wrapper = n;
                         n.style = "max-width: 100%;";
-                        if(preferences['TopBar']){
-                            toRemove.push(n.childNodes[1]);
-                        }
+                        // if(preferences['TopBar'] && n.childNodes[1]!=undefined && (n.childNodes[1].classList.contains('ic-app-nav-toggle-and-crumbs no-print') || n.childNodes[1].classList.contains('ic-app-nav-toggle-and-crumbs no-print'))){
+                        //     topBarSucc = true;
+                        //     toRemove.push(n.childNodes[1]);
+                        // }
+                    }
+                    else if(n.classList.contains('ic-app-nav-toggle-and-crumbs')){
+                        topBarSucc = true;
+                        //console.log('test');
+                        n.style = "display:none;";
+                        toRemove.push(n);
                     }
                     else if(n.matches('#content')){
-                        //content = n;
-                        //console.log(n.childNodes[1].tagName=='H2');
                         if(preferences['Title'] && n.childNodes[1]!=undefined && n.childNodes[1].tagName=='H2'){
+                            titleSucc = true;
                             toRemove.push(n.childNodes[1]);
                         }
-                    }  
+                    }
                     else if(preferences['BottomBar'] && n.matches('#sequence_footer')){
+                        bottomBarSucc = true;
                         toRemove.push(n)
                     }
-                    else if(n.querySelector('iframe')){
-                        //console.log('found iframe');
+                    else if(n.tagName=='iframe' && (n.id != "instructure_ajax_error_result" || n.id != "instructure_ajax_error_result")){
                         n.style = "width: 100%; border: 0px; overflow: auto; height: 98%; min-height: 98%;";
                     }
-                    // else if((preferences['Default'] || preferences['Enlarge']) && n.matches('#doc_preview')){
-                    //     console.log('found doc_preview');
-                    //     console.log(n.childNodes);
-                    //     n.childNodes[0].style = "overflow: auto hidden; padding-right: 10px; resize: vertical; border: 1px solid transparent; height: 100%;";
-                    // }
-                    else if(!preferences['Default'] && preferences['SideBar'] && n.matches('#section-tabs-header-subtitle')){
-                        //console.log('found sidebar');
+                    else if(!preferences['Default'] && preferences['SideBar'] && n.matches('#main')){
                         var minimize = document.createElement("button");
-                        //minimize.innerText = "Min";
-                        n.innerText = "";
-                        n.append(minimize);
-                        var main = document.getElementById('main');
-                        var leftSide = document.getElementById('left-side');
-                        //main.style = "margin-left: 140px;";
-                        //leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+                        var leftSide = n.childNodes[3];
+                        if(leftSide.id == "left-side"){
+                            leftSide.childNodes[1].innerText = "";
+                            leftSide.childNodes[1].append(minimize);
 
-                        function minOrMax(){
-                            if(preferences['Maximized']){
-                                main.style = "margin-left: 140px;";
-                                leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
-                                minimize.innerText = "Min";
-                                //preferences['Maximized'] = false;
+                            function minOrMax(){
+                                if(preferences['Maximized']){
+                                    n.style = "margin-left: 140px;";
+                                    leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+                                    minimize.innerText = "Min";
+                                }
+                                else{
+                                    n.style = "margin-left:75px;";
+                                    leftSide.style = "width:75px; padding: 24px 0px 6px 12px;";
+                                    minimize.innerText = "Max";
+                                }
+                                chrome.storage.sync.set({'preferences':preferences});
                             }
-                            else{
-                                main.style = "margin-left:75px;";
-                                leftSide.style = "width:75px; padding: 24px 0px 6px 12px;";
-                                minimize.innerText = "Max";
-                                //preferences['Maximized'] = true;
-                            }
-                            chrome.storage.sync.set({'preferences':preferences});
-                        }
-                        minOrMax();
-                        minimize.addEventListener('click', function(){
-                            preferences['Maximized'] = !preferences['Maximized'];
                             minOrMax();
-                        });
+                            minimize.addEventListener('click', function(){
+                                preferences['Maximized'] = !preferences['Maximized'];
+                                minOrMax();
+                            });
+                            SideBarSucc = true;
+                        }
                     }
                 }
             }
@@ -95,29 +93,10 @@ chrome.storage.sync.get('preferences', function(result){
     }
 });
 
-//fix2();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 chrome.runtime.sendMessage({todo:"showPageAction"});
 //primarily for testing
 chrome.runtime.onMessage.addListener(function(request,sender,sendResponse){
     if(request.todo == "test"){
-        //console.log('recieved');
         fix2();
     }
 });
@@ -129,32 +108,29 @@ function fix2(){
             return;
         }
 
-        // //fix wrapper max width
-        // var wrapper = document.getElementById('wrapper');
-        // //console.log(wrapper);
-        // //if(wrapper!=null){
-        //     wrapper.style = "max-width: 100%;";
-        // //}
-        // var content = document.getElementById('content');
-
         // //get rid of top bar
-        // if(preferences['Default'] || preferences['TopBar']){
-        //     var topBar = document.getElementsByClassName('ic-app-nav-toggle-and-crumbs no-print');
-        //     //console.log(topBar); 
-        //     //topBar[0].innerHTML = "";
-        //     if(topBar[0]!=null){
-        //         wrapper.removeChild(topBar[0]);
-        //     }
-        // }
+        if(!topBarSucc && (preferences['Default'] || preferences['TopBar'])){
+            //console.log('backup topbar')
+            var topBar = document.getElementsByClassName('ic-app-nav-toggle-and-crumbs');
+            if(topBar[0]!=null){
+                var wrapper = document.getElementById('wrapper');
+                topBar[0].style = "display:none;";
+            }
+            topBarSucc = true;
+        }
 
-        // //remove bottom bar
-        // if(preferences['Default'] || preferences['BottomBar']){
-        //     var sequence_footer = document.getElementById('sequence_footer')
-        //     //console.log(sequence_footer);
-        //     if(sequence_footer!=null){
-        //         content.removeChild(sequence_footer);
-        //     }
-        // }
+        var content = document.getElementById('content');
+
+        //remove bottom bar
+        if(!bottomBarSucc && (preferences['Default'] || preferences['BottomBar'])){
+            //console.log('backup bottombar')
+            var sequence_footer = document.getElementById('sequence_footer')
+            if(sequence_footer!=null){
+                content.removeChild(sequence_footer);
+            }
+            bottomBarSucc = true;
+        }
+
         var iframes = document.querySelectorAll('iframe');
         //fix iframes, add a setting for later???
         // if(preferences['Default'] || preferences['Enlarge']){
@@ -168,55 +144,58 @@ function fix2(){
         //         }
         //     };
         // }
-        //console.log(iframes.length);
+
         if(iframes.length > 1){
             //fix overflow, add setting for this??
-            if(preferences['Default'] || preferences['Enlarge']){
-                console.log('fixing overflow');
+            if(!overflowSucc && (preferences['Default'] || preferences['Enlarge'])){
+                //console.log('fixing overflow');
                 var doc_preview = document.getElementById('doc_preview');
-                //console.log(doc_preview.childNodes[0].style);
-                console.log(doc_preview.childNodes[0]);
-                doc_preview.childNodes[0].style = "overflow: auto hidden; padding-right: 10px; resize: vertical; border: 1px solid transparent; height: 100%;";
+                if(doc_preview!=null && doc_preview.childNodes[0]!=undefined){
+                    doc_preview.childNodes[0].style = "overflow: auto hidden; padding-right: 10px; resize: vertical; border: 1px solid transparent; height: 100%;";
+                    overflow = true;
+                }
             }
             //var get rid of redundant title
-            // if(preferences['Default'] || preferences['Title']){
-            //     //console.log(content.childNodes);
-            //     content.removeChild(content.childNodes[1]);
-            // }
+            if(!titleSucc && (preferences['Default'] || preferences['Title'])){
+                //console.log('backup title');
+                if(content.childNodes[1] != undefined && content.childNodes[1].tagName=='H2'){
+                    content.removeChild(content.childNodes[1]);
+                }
+                titleSucc = true;
+            }
         }
 
         //sidebar stuff
-        if(!preferences['Default'] && preferences['SideBar']){
+        if(!SideBarSucc && !preferences['Default'] && preferences['SideBar']){
+            //console.log('backup sidebar');
             var minimize = document.createElement("button");
-            //minimize.innerText = "Min";
-            var spring = document.getElementById('section-tabs-header-subtitle');
-            spring.innerText = "";
-            spring.append(minimize);
             var main = document.getElementById('main');
             var leftSide = document.getElementById('left-side');
-            //main.style = "margin-left: 140px;";
-            //leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+            if(leftSide != null){
+                var spring = document.getElementById('section-tabs-header-subtitle');
+                spring.innerText = "";
+                spring.append(minimize);
 
-            function minOrMax(){
-                if(preferences['Maximized']){
-                    main.style = "margin-left: 140px;";
-                    leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
-                    minimize.innerText = "Min";
-                    //preferences['Maximized'] = false;
+                function minOrMax(){
+                    if(preferences['Maximized']){
+                        main.style = "margin-left: 140px;";
+                        leftSide.style = "width: 140px; padding: 24px 0px 6px 12px;";
+                        minimize.innerText = "Min";
+                    }
+                    else{
+                        main.style = "margin-left:75px;";
+                        leftSide.style = "width:75px; padding: 24px 0px 6px 12px;";
+                        minimize.innerText = "Max";
+                    }
+                    chrome.storage.sync.set({'preferences':preferences});
                 }
-                else{
-                    main.style = "margin-left:75px;";
-                    leftSide.style = "width:75px; padding: 24px 0px 6px 12px;";
-                    minimize.innerText = "Max";
-                    //preferences['Maximized'] = true;
-                }
-                chrome.storage.sync.set({'preferences':preferences});
-            }
-            minOrMax();
-            minimize.addEventListener('click', function(){
-                preferences['Maximized'] = !preferences['Maximized'];
                 minOrMax();
-            });
+                minimize.addEventListener('click', function(){
+                    preferences['Maximized'] = !preferences['Maximized'];
+                    minOrMax();
+                });
+                SideBarSucc = true;
+            }
         }
         window.dispatchEvent(new Event('resize'));
     })

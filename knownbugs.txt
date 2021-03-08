@@ -1,3 +1,0 @@
-Experience is a bit choppy due to the page loading first and then the extension running, look into having the extension
-run before the page is displayed.
-
